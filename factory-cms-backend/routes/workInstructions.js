@@ -46,7 +46,31 @@ router.post("/steps", workInstructionsController.createStep);
  */
 router.get("/steps/:productId", workInstructionsController.getStepsByProduct);
 
+
+/**
+ * @swagger
+ * /tools:
+ *   get:
+ *     description: Get all tools
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+router.get("/tools", workInstructionsController.getTools);
+
 router.post("/tools", workInstructionsController.createTool);
+
+/**
+ * @swagger
+ * /parts:
+ *   get:
+ *     description: Get all parts
+ *     responses:
+ *       200:
+ *         description: Success
+ */
+router.get("/parts", workInstructionsController.getParts);
+
 router.post("/parts", workInstructionsController.createPart);
 
 module.exports = router;
