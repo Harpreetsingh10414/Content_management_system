@@ -44,12 +44,18 @@ mongoose
     console.error("❌ MongoDB Connection Error:", err);
     process.exit(1); // Exit if MongoDB fails to connect
   });
-
+// Routes
 // Import Work Instructions Routes
 const workInstructionsRoutes = require("./routes/workInstructions");
+// Import One Point Lessons Routes
+const onePointLessonRoutes = require("./routes/onePointLessonRoutes");
+
+
 
 // Use Work Instructions Routes
 app.use("/api/work-instructions", workInstructionsRoutes);
+// Use One Point Lesson Routes
+app.use("/api/one-point-lesson", onePointLessonRoutes);
 
 // Swagger Documentation
 const swaggerOptions = {
