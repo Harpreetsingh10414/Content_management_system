@@ -1,0 +1,407 @@
+{
+	"info": {
+		"_postman_id": "53237961-4c05-43d7-bad8-d535aede284f",
+		"name": "Content Management System",
+		"description": "StartFragment\n\n#### **Overview**\n\nThe **Content Management System (CMS) API** is designed to manage **Work Instructions**, **One Point Lessons**, and related factory content. This API allows efficient handling of **products, steps, tools, parts, documents, and media files**.\n\n#### **Key Features**\n\n✅ **Work Instructions Module**\n\n- Manage **Products**, **Steps**, **Tools**, and **Parts**\n    \n- Upload and retrieve **media files (PDFs, images, videos)**\n    \n- Associate **steps with tools and parts**\n    \n\n✅ **One Point Lesson Module**\n\n- **Multilingual support**\n    \n- **Document versioning and control**\n    \n- **Standard and customized document formats**\n    \n- Store metadata like **photo created by, approved by, and date**\n    \n\n✅ **General Features**\n\n- **RESTful API architecture**\n    \n- **JSON-based responses**\n    \n- **File upload support using multipart/form-data**\n    \n- **Real-time content updates**\n    \n\n#### **API Endpoints Overview**\n\n📌 **Work Instructions**\n\n- `POST /products` → Create a new product\n    \n- `GET /products` → Fetch all products\n    \n- `POST /steps` → Create a new step with media\n    \n- `GET /steps/{productId}` → Get all steps for a product\n    \n- `POST /tools` → Create a new tool\n    \n- `GET /tools` → Fetch all tools\n    \n- `POST /parts` → Create a new part\n    \n- `GET /parts` → Fetch all parts\n    \n\n📌 **One Point Lessons**\n\n- `POST /one-point-lessons` → Create a new lesson\n    \n- `GET /one-point-lessons` → Fetch all lessons\n    \n- `GET /one-point-lessons/{lessonId}` → Get a specific lesson\n    \n\n#### **Usage Instructions**\n\n1️⃣ **Set the Base URL**: Update requests with your **server's IP or domain** (default: `http://localhost:3000`).  \n2️⃣ **Authentication**: No authentication required for basic usage.  \n3️⃣ **File Uploads**: Use `multipart/form-data` for media uploads.  \n4️⃣ **Testing on Postman**: Import this collection and modify parameters accordingly.\n\n🚀 **For Developers**  \nThis API is structured for **factory use**, ensuring seamless **real-time updates** across multiple worker screens. Developers can easily integrate it into the **frontend system** for better user interaction and content accessibility.\n\n📌 **For More Information**  \nRefer to the API documentation at:  \n[Swagger UI](https://null) (if enabled).\n\nEndFragment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "26758540"
+	},
+	"item": [
+		{
+			"name": "01 WI Add product name",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Product B\",\r\n  \"description\": \"This is a second product.\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add one point lesson",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "title",
+							"value": "Safety Guidelines",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "Proper gear usage in production area",
+							"type": "text"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"type": "text"
+						},
+						{
+							"key": "image",
+							"type": "file",
+							"src": "postman-cloud:///1efe65b6-4d49-4300-9877-45c9f7dc2b8c"
+						},
+						{
+							"key": "createdBy",
+							"value": "Harpreet",
+							"type": "text"
+						},
+						{
+							"key": "approvedBy",
+							"value": "Yash",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/one-point-lesson",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"one-point-lesson"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all OPL",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/one-point-lesson",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"one-point-lesson"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Change OPL approved status",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"approvalStatus\": \"Approved\",\r\n  \"approvedBy\": \"Manager Name Yash\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/one-point-lesson/67a7beb44550d9a2c4e2760d",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"one-point-lesson",
+						"67a7beb44550d9a2c4e2760d"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 WI Get all Products",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 WI get steps from product ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/steps/65c8b0fcb4e16d00236e5d89",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"steps",
+						"65c8b0fcb4e16d00236e5d89"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 WI add steps by product ID",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "multipart/form-data",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "productId",
+							"value": "67a798f9f1acc6937b2dd9ea",
+							"type": "text"
+						},
+						{
+							"key": "stepNumber",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "Step 1 description",
+							"type": "text"
+						},
+						{
+							"key": "mediaType",
+							"value": "image",
+							"type": "text"
+						},
+						{
+							"key": "toolsUsed[]",
+							"value": "67a798f9f1acc6937b2dd9ea",
+							"type": "text"
+						},
+						{
+							"key": "partsInvolved[]",
+							"value": "67a798f9f1acc6937b2dd9ea",
+							"type": "text"
+						},
+						{
+							"key": "media",
+							"type": "file",
+							"src": "postman-cloud:///1efe645c-e8f6-4290-81e5-19054c03daed"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/steps",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"steps"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "02 WI add tools",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Screwdriver\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/tools",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"tools"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "WI add parts",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Bolt\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/parts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"parts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "WI get all tools",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/tools",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"tools"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "WI get all parts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/parts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"parts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 WI get all products",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/products",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"products"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "01 WI get steps by product",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/work-instructions/steps/67a7bdc21d68d13ee8842c5e",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"api",
+						"work-instructions",
+						"steps",
+						"67a7bdc21d68d13ee8842c5e"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
