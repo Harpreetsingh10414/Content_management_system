@@ -51,6 +51,8 @@ const workInstructionsRoutes = require("./routes/workInstructions");
 const onePointLessonRoutes = require("./routes/onePointLessonRoutes");
 // Import Documents Routes
 const documentRoutes = require("./routes/documentRoutes"); 
+// Import Dos and Donts Routes
+const dosDontsRoutes = require("./routes/dosDontsRoutes");
 
 
 
@@ -60,6 +62,8 @@ app.use("/api/work-instructions", workInstructionsRoutes);
 app.use("/api/one-point-lesson", onePointLessonRoutes);
 // Use Documents Routes
 app.use("/api/documents", documentRoutes);
+// Use Dos and Donts Routes
+app.use("/api/dos-donts", dosDontsRoutes);
 
 // Swagger Documentation
 const swaggerOptions = {
@@ -72,7 +76,11 @@ const swaggerOptions = {
     },
     servers: [{ url: `http://localhost:${PORT}` }],
   },
-  apis: ["./routes/workInstructions.js", "./routes/documentRoutes.js"],
+  apis: [
+    "./routes/workInstructions.js",
+    "./routes/documentRoutes.js",
+    "./routes/dosDontsRoutes.js", 
+  ],
 };
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
