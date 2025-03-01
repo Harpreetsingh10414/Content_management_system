@@ -49,6 +49,8 @@ mongoose
 const workInstructionsRoutes = require("./routes/workInstructions");
 // Import One Point Lessons Routes
 const onePointLessonRoutes = require("./routes/onePointLessonRoutes");
+// Import Documents Routes
+const documentRoutes = require("./routes/documentRoutes"); 
 
 
 
@@ -56,6 +58,8 @@ const onePointLessonRoutes = require("./routes/onePointLessonRoutes");
 app.use("/api/work-instructions", workInstructionsRoutes);
 // Use One Point Lesson Routes
 app.use("/api/one-point-lesson", onePointLessonRoutes);
+// Use Documents Routes
+app.use("/api/documents", documentRoutes);
 
 // Swagger Documentation
 const swaggerOptions = {
@@ -68,7 +72,7 @@ const swaggerOptions = {
     },
     servers: [{ url: `http://localhost:${PORT}` }],
   },
-  apis: ["./routes/workInstructions.js"],
+  apis: ["./routes/workInstructions.js", "./routes/documentRoutes.js"],
 };
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
