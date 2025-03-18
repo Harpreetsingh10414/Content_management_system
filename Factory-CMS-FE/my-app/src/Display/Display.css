@@ -1,0 +1,78 @@
+.Display_steps_main {
+    display: flex;
+    justify-content: space-between;
+    text-align: left;
+    margin-top: 2%;
+}
+
+.Display_steps_main .leftStep {
+    width: 20%;
+    border: 2px solid rgb(200, 200, 200);
+    padding: 10px 10px;
+    border-radius: 8px;
+}
+
+.Display_steps_main .centerStep {
+    width: 50%;
+    border: 2px solid rgb(200, 200, 200);
+    border-radius: 8px;
+}
+
+.Display_steps_main .rightStep {
+    width: 20%;
+    border: 2px solid rgb(200, 200, 200);
+    padding: 10px 10px;
+    border-radius: 8px;
+}
+
+.lesson-carousel {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f4f4f4;
+  }
+  
+  .swiper-container {
+    width: 80%; /* Adjust width */
+    height: 100%;
+  }
+  
+  .lesson-image {
+    width: 100%;
+    height: 100%;
+ 
+  }
+
+  .leftStep {
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid #ccc;
+    margin: 5px;
+    background-color: white;
+    transition: background 0.3s ease;
+}
+
+.leftStep:hover {
+    background-color: #f0f0f0;
+}
+
+.leftStep.active {
+    background-color: #ddd;
+}
+
+.centerStep {
+    width: 50%;
+    /* padding: 20px; */
+    /* background: white; */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+ 
+.sticky {
+    position: sticky;
+    top: 20px;
+}
+
+  
