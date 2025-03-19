@@ -53,6 +53,8 @@ const onePointLessonRoutes = require("./routes/onePointLessonRoutes");
 const documentRoutes = require("./routes/documentRoutes"); 
 // Import Dos and Donts Routes
 const dosDontsRoutes = require("./routes/dosDontsRoutes");
+// Import Checksheet Routes
+const checksheetRoutes = require("./routes/checksheetRoutes");
 
 
 
@@ -64,6 +66,8 @@ app.use("/api/one-point-lesson", onePointLessonRoutes);
 app.use("/api/documents", documentRoutes);
 // Use Dos and Donts Routes
 app.use("/api/dos-donts", dosDontsRoutes);
+// Use Checksheet Routes
+app.use("/api/checksheets", checksheetRoutes);
 
 // Swagger Documentation
 const swaggerOptions = {

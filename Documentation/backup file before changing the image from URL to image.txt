@@ -1,0 +1,228 @@
+-------- models.js file ----------------
+
+const mongoose = require("mongoose");
+
+const checkSchema = new mongoose.Schema({
+  serialNo: { type: Number, required: true },
+  checkMethod: { type: String, required: true }, // URL to image
+  station: { type: String, required: true },
+  permissible: { type: String, required: true },
+  checkPoint: { type: String, required: true },
+  planTime: { type: Number, required: true }, // in minutes
+  frequency: { type: String, required: true },
+  remark: { type: String },
+  actualTime: { type: Number },
+  actionTaken: { type: String }
+}, { _id: true });
+
+const checksheetSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  formatNo: { type: String },
+  issueNoDate: { type: String },
+  revNoDate: { type: String },
+  pageNo: { type: String },
+  machineName: { type: String },
+  identificationNo: { type: String },
+  location: { type: String },
+  maintenanceTechnician: { type: String },
+  maintenanceHOD: { type: String },
+  pmDoneDate: { type: Date },
+  pmNextDueDate: { type: Date },
+  checks: [checkSchema], // Array of checks
+}, { timestamps: true });
+
+module.exports = mongoose.model("Checksheet", checksheetSchema);
+
+
+---------- checksheetcontroller file --------------
+
+const Checksheet = require("../models/Checksheet");
+
+// ✅ Create a new Checksheet
+exports.createChecksheet = async (req, res) => {
+  try {
+    const checksheet = new Checksheet(req.body);
+    await checksheet.save();
+    res.status(201).json({ message: "Checksheet created successfully", checksheet });
+  } catch (error) {
+    res.status(500).json({ message: "Error creating checksheet", error });
+  }
+};
+
+// ✅ Get all Checksheets
+exports.getAllChecksheets = async (req, res) => {
+  try {
+    const checksheets = await Checksheet.find();
+    res.status(200).json(checksheets);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching checksheets", error });
+  }
+};
+
+// ✅ Get a Checksheet by ID
+exports.getChecksheetById = async (req, res) => {
+  try {
+    const checksheet = await Checksheet.findById(req.params.id);
+    if (!checksheet) {
+      return res.status(404).json({ message: "Checksheet not found" });
+    }
+    res.status(200).json(checksheet);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching checksheet", error });
+  }
+};
+
+// ✅ Add a new Check to an existing Checksheet
+exports.addCheckToChecksheet = async (req, res) => {
+  try {
+    const { checksheetId } = req.params;
+    const checksheet = await Checksheet.findById(checksheetId);
+
+    if (!checksheet) {
+      return res.status(404).json({ message: "Checksheet not found" });
+    }
+
+    checksheet.checks.push(req.body); // Add new check
+    await checksheet.save();
+    res.status(200).json({ message: "Check added successfully", checksheet });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding check", error });
+  }
+};
+
+// ✅ Delete a specific Check from a Checksheet
+exports.deleteCheckFromChecksheet = async (req, res) => {
+  try {
+    const { checksheetId, checkId } = req.params;
+    const checksheet = await Checksheet.findById(checksheetId);
+
+    if (!checksheet) {
+      return res.status(404).json({ message: "Checksheet not found" });
+    }
+
+    // Remove check by ID
+    checksheet.checks = checksheet.checks.filter(check => check._id.toString() !== checkId);
+    
+    await checksheet.save();
+    res.status(200).json({ message: "Check deleted successfully", checksheet });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting check", error });
+  }
+};
+
+// ✅ Delete an entire Checksheet
+exports.deleteChecksheet = async (req, res) => {
+  try {
+    const checksheet = await Checksheet.findByIdAndDelete(req.params.id);
+    if (!checksheet) {
+      return res.status(404).json({ message: "Checksheet not found" });
+    }
+    res.status(200).json({ message: "Checksheet deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting checksheet", error });
+  }
+};
+
+// ✅ Get all checks of a specific Checksheet
+exports.getChecksByChecksheetId = async (req, res) => {
+    try {
+      const { checksheetId } = req.params;
+      const checksheet = await Checksheet.findById(checksheetId);
+  
+      if (!checksheet) {
+        return res.status(404).json({ message: "Checksheet not found" });
+      }
+  
+      res.status(200).json({ checks: checksheet.checks });
+    } catch (error) {
+      res.status(500).json({ message: "Error fetching checks", error });
+    }
+  };
+  
+
+
+---------- checksheet routes --------------
+const express = require("express");
+const router = express.Router();
+const checksheetController = require("../controllers/checksheetController");
+
+// ✅ Create a new Checksheet
+router.post("/", checksheetController.createChecksheet);
+
+// ✅ Get all Checksheets
+router.get("/", checksheetController.getAllChecksheets);
+
+// ✅ Get a specific Checksheet
+router.get("/:id", checksheetController.getChecksheetById);
+
+// ✅ Add a new Check to an existing Checksheet
+router.post("/:checksheetId/checks", checksheetController.addCheckToChecksheet);
+
+// ✅ Delete a specific Check from a Checksheet
+router.delete("/:checksheetId/checks/:checkId", checksheetController.deleteCheckFromChecksheet);
+
+// ✅ Delete an entire Checksheet
+router.delete("/:id", checksheetController.deleteChecksheet);
+
+// ✅ Get all checks of a specific Checksheet
+router.get("/:checksheetId/checks", checksheetController.getChecksByChecksheetId);
+
+
+module.exports = router;
+
+
+------------- upload.js file --------------- 
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+
+// Define upload directories
+const uploadsDir = path.join(__dirname, "../uploads");
+const imagesDir = path.join(uploadsDir, "images");
+const pdfsDir = path.join(uploadsDir, "pdfs");
+
+// Ensure that the necessary directories exist
+[uploadsDir, imagesDir, pdfsDir].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Multer Storage Configuration
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    let uploadPath = uploadsDir;
+
+    // Check if file is an image or PDF
+    if (file.mimetype.startsWith("image/")) {
+      uploadPath = imagesDir;
+    } else if (file.mimetype === "application/pdf") {
+      uploadPath = pdfsDir;
+    }
+
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}_${file.originalname}`);
+  },
+});
+
+// File Filter to Accept Only PDFs and Images
+const fileFilter = (req, file, cb) => {
+  const allowedMimeTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+
+  if (allowedMimeTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only PDF, JPEG, PNG, and JPG files are allowed!"), false);
+  }
+};
+
+// Multer Upload Instance
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+});
+
+module.exports = upload;
