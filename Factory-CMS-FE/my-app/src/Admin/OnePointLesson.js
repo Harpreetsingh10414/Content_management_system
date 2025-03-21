@@ -61,9 +61,7 @@ const OnePointLesson = () => {
 
                     <TextField label="Created By" value={createdBy} onChange={(e) => setCreatedBy(e.target.value)} fullWidth margin="normal" required />
                     <TextField label="Approved By" value={approvedBy} onChange={(e) => setApprovedBy(e.target.value)} fullWidth margin="normal" required />
-
                     <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} required style={{ marginTop: "16px" }} />
-
                     <Button type="submit" variant="contained" color="primary" sx={{ marginTop: 2 }} disabled={loading}>
                         {loading ? "Submitting..." : "Submit Lesson"}
                     </Button>

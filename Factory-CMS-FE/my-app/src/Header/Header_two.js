@@ -11,6 +11,7 @@ const Header = () => {
         <ul  style={{marginRight:'30px'}}>
         <li><Link to="/create-step">steps</Link></li> 
         <li><Link to="/add-onepoint-lesson">one-p-l</Link></li> 
+        <li><Link to="/DoDonts">Do-Donts</Link></li> 
         <li><Link to="/add-parts">Parts</Link></li> 
         <li><Link to="/add-tool">Tools</Link></li> 
         <li><Link to="/add-product">Product</Link></li> 

@@ -5,8 +5,10 @@ import ProductForm from "./Admin/ProductForm";
 import CreateStep from "./Admin/CreateStep";
 import ToolsForm from "./Admin/ToolsForm";
 import PartsForm from "./Admin/PartsForm";
+import DosDontsForm from "./Admin/DosDontsForm";
 import OnePointLesson from "./Admin/OnePointLesson";
 import OnePointLessonList from "./Display/OnePointLessonList";
+import DoDontsPage from "./Display/DosAndDontsList";
 import Tabs from "./Display/Tabs";
 
 function App() {
@@ -19,10 +21,13 @@ function App() {
         <Route path="/add-tool" element={<ToolsForm />} />
         <Route path="/add-parts" element={<PartsForm />} />
         <Route path="/add-onepoint-lesson" element={<OnePointLesson />} />
+        <Route path="/DoDonts" element={<DosDontsForm />} />
+
 
 
         <Route path="/products" element={<ProductList />} />
         <Route path="/one-point-lesson" element={<OnePointLessonList />} />
+        <Route path="/DoDontsPage" element={<DoDontsPage />} />
 
         <Route path="/tabs" element={<Tabs />} />
       </Routes>
