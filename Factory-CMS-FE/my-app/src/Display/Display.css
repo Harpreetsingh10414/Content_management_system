@@ -32,20 +32,21 @@
     align-items: center;
     justify-content: center;
     background-color: #f4f4f4;
-  }
-  
-  .swiper-container {
-    width: 80%; /* Adjust width */
+}
+
+.swiper-container {
+    width: 80%;
+    /* Adjust width */
     height: 100%;
-  }
-  
-  .lesson-image {
+}
+
+.lesson-image {
     width: 100%;
     height: 100%;
- 
-  }
 
-  .leftStep {
+}
+
+.leftStep {
     cursor: pointer;
     padding: 10px;
     border: 1px solid #ccc;
@@ -69,10 +70,26 @@
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
- 
+
 .sticky {
     position: sticky;
     top: 20px;
 }
 
-  
+
+/* ==========     andon     ================== */
+.andon_main_d {
+     display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    width: 70%;
+    margin: auto;
+ }
+
+.andon_main_d .inner_d {
+    border: 2px solid rgb(197, 197, 197);
+    width: 48%;
+    border-radius: 25px;
+    margin-top: 4%;
+    padding-bottom: 3%;
+}

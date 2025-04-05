@@ -12,10 +12,14 @@ const Header = () => {
         <li><Link to="/create-step">steps</Link></li> 
         <li><Link to="/add-onepoint-lesson">one-p-l</Link></li> 
         <li><Link to="/DoDonts">Do-Donts</Link></li> 
+        <li><Link to="/check-sheet-form">Check Sheet</Link></li> 
+        <li><Link to="/Document-form">Document</Link></li> 
         <li><Link to="/add-parts">Parts</Link></li> 
         <li><Link to="/add-tool">Tools</Link></li> 
         <li><Link to="/add-product">Product</Link></li> 
+
         <li><Link to="/tabs">Log out</Link></li> 
+       
 
         </ul>
       </nav>

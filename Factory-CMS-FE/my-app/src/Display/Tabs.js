@@ -5,6 +5,9 @@ import Header from '../Header/Header';
 import ProductList from './ProductList';
 import OnePointLessonList from './OnePointLessonList';
 import DoDontsList from './DosAndDontsList';
+import DocumentList from './DocumentList';
+import Andon from './Andon';
+import ChecksheetList from './ChecksheetList';
 
 const Tabs = () => {
     const [activeTab, setActiveTab] = useState(1); // Default active tab is 1
@@ -45,6 +48,18 @@ const Tabs = () => {
                     >
                        Do & Dont's
                     </div>
+                    <div
+                        className={`tab ${activeTab === 5 ? 'active' : ''}`}
+                        onClick={() => handleTabClick(5)}
+                    >
+                       Andon
+                    </div>
+                    <div
+                        className={`tab ${activeTab === 6 ? 'active' : ''}`}
+                        onClick={() => handleTabClick(6)}
+                    >
+                       Check Sheet
+                    </div>
                 </div>
 
                 {/* Tab Content */}
@@ -61,12 +76,22 @@ const Tabs = () => {
                     )}
                      {activeTab === 3 && (
                         <div className="tab-content">
-                            <OnePointLessonList />
+                            <DocumentList />
                         </div>
                     )} 
                     {activeTab === 4 && (
                         <div className="tab-content">
                             <DoDontsList />
+                        </div>
+                    )}
+                      {activeTab === 5 && (
+                        <div className="tab-content">
+                            <Andon />
+                        </div>
+                    )}
+                      {activeTab === 6 && (
+                        <div className="tab-content">
+                            <ChecksheetList />
                         </div>
                     )}
                 </div>
