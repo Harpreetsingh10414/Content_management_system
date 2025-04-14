@@ -2,8 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const pdfParse = require("pdf-parse");
 const workInstructionRoutes = require("./routes/workInstructionRoutes");
 const onePointLessonRoutes = require('./routes/onePointLesson.routes');
+const documentRoutes = require("./routes/documentRoutes");
 
 dotenv.config();
 
@@ -20,6 +22,9 @@ app.use("/api/work-instructions", workInstructionRoutes);
 
 // Use One Point Lesson Routes
 app.use('/api/one-point-lesson', onePointLessonRoutes);
+
+// Use Document Routes
+app.use("/api/documents", documentRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
