@@ -103,3 +103,27 @@ exports.getParts = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+// Get all products by machine 
+exports.getProductsByMachine = async (req, res) => {
+  try {
+    const { machineCode } = req.params;
+
+    // Get distinct product codes from work instructions
+    const productCodes = await WorkInstruction.distinct("product", { machineCode });
+
+    // Fetch product names from the Product model
+    const products = await Product.find({ code: { $in: productCodes } });
+
+    // Format response
+    const result = products.map(p => ({
+      code: p.code,
+      name: p.name,
+    }));
+
+    res.status(200).json({ machineCode, products: result });
+  } catch (err) {
+    console.error("Error fetching products with names:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
