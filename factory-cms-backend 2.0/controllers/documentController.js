@@ -4,6 +4,7 @@ const pdfParse = require("pdf-parse");
 const path = require("path");
 
 // ➤ Upload a new document
+// ➤ Upload a new document (PDF or image)
 exports.uploadDocument = async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -12,12 +13,26 @@ exports.uploadDocument = async (req, res) => {
     if (!machineCode) return res.status(400).json({ error: "machineCode is required" });
 
     const filePath = `/uploads/documents/${req.file.filename}`;
+    const mimeType = req.file.mimetype;
 
-    const pdfBuffer = fs.readFileSync(req.file.path);
-    const pdfData = await pdfParse(pdfBuffer);
-    const extractedText = pdfData.text;
+    let keywords = [];
 
-    const keywords = extractedText.split(/\s+/).slice(0, 50).map(word => word.toLowerCase());
+    if (mimeType === "application/pdf") {
+      // Extract text from PDF
+      const pdfBuffer = fs.readFileSync(req.file.path);
+      const pdfData = await pdfParse(pdfBuffer);
+      const extractedText = pdfData.text;
+      keywords = extractedText.split(/\s+/).slice(0, 50).map(word => word.toLowerCase());
+    } else if (
+      mimeType === "image/png" ||
+      mimeType === "image/jpeg" ||
+      mimeType === "image/jpg"
+    ) {
+      // Add default keywords for images (or leave empty)
+      keywords = ["image", "document"];
+    } else {
+      return res.status(400).json({ error: "Unsupported file type. Only PDF or image allowed." });
+    }
 
     const newDocument = new Document({
       title,
@@ -36,6 +51,7 @@ exports.uploadDocument = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // ➤ Get all documents (optionally filter by machineCode)
 exports.getAllDocuments = async (req, res) => {

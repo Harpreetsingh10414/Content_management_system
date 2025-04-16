@@ -1,9 +1,7 @@
-const express = require("express");
-const router = express.Router();
+// middleware/upload.js
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const documentController = require("../controllers/documentController");
 
 // Ensure upload directory exists
 const uploadDir = path.join(__dirname, "../uploads/documents");
@@ -11,17 +9,18 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Storage settings
+// Storage config
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: function (req, file, cb) {
     cb(null, uploadDir);
   },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`);
+  filename: function (req, file, cb) {
+    const uniqueName = Date.now() + "_" + file.originalname;
+    cb(null, uniqueName);
   },
 });
 
-// File type filter
+// File type validation
 const fileFilter = (req, file, cb) => {
   const allowedTypes = [
     "application/pdf",
@@ -29,7 +28,6 @@ const fileFilter = (req, file, cb) => {
     "image/jpeg",
     "image/jpg",
   ];
-
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -39,11 +37,4 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter });
 
-// Routes
-router.post("/", upload.single("file"), documentController.uploadDocument);
-router.get("/", documentController.getAllDocuments);
-router.get("/search", documentController.searchDocuments);
-router.get("/:id", documentController.getDocumentById);
-router.delete("/:id", documentController.deleteDocument);
-
-module.exports = router;
+module.exports = upload;
