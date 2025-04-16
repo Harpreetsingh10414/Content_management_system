@@ -40,7 +40,19 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter });
 
 // Routes
-router.post("/", upload.single("file"), documentController.uploadDocument);
+router.post("/", (req, res, next) => {
+  upload.single("file")(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      // Multer-specific error
+      return res.status(400).json({ error: err.message });
+    } else if (err) {
+      // Other errors, like file type
+      return res.status(400).json({ error: err.message });
+    }
+    next();
+  });
+}, documentController.uploadDocument);
+
 router.get("/", documentController.getAllDocuments);
 router.get("/search", documentController.searchDocuments);
 router.get("/:id", documentController.getDocumentById);
