@@ -6,6 +6,7 @@ const pdfParse = require("pdf-parse");
 const workInstructionRoutes = require("./routes/workInstructionRoutes");
 const onePointLessonRoutes = require('./routes/onePointLesson.routes');
 const documentRoutes = require("./routes/documentRoutes");
+const dosDontsRoutes = require("./routes/dosDontsRoutes");
 
 dotenv.config();
 
@@ -25,6 +26,9 @@ app.use('/api/one-point-lesson', onePointLessonRoutes);
 
 // Use Document Routes
 app.use("/api/documents", documentRoutes);
+
+// Use Dos and Don'ts Routes
+app.use("/api/dos-donts", dosDontsRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
