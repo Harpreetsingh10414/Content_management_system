@@ -7,6 +7,8 @@ const workInstructionRoutes = require("./routes/workInstructionRoutes");
 const onePointLessonRoutes = require('./routes/onePointLesson.routes');
 const documentRoutes = require("./routes/documentRoutes");
 const dosDontsRoutes = require("./routes/dosDontsRoutes");
+const checksheetRoutes = require("./routes/checksheetRoutes");
+
 
 dotenv.config();
 
@@ -29,6 +31,9 @@ app.use("/api/documents", documentRoutes);
 
 // Use Dos and Don'ts Routes
 app.use("/api/dos-donts", dosDontsRoutes);
+
+// Use Checksheet Routes
+app.use("/api/checksheets", checksheetRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
