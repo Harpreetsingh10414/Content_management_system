@@ -10,6 +10,7 @@ exports.createProduct = async (req, res) => {
     await product.save();
     res.status(201).json(product);
   } catch (err) {
+    console.error("Error creating product:", err); // Log the error for debugging
     res.status(500).json({ error: "Server error" });
   }
 };

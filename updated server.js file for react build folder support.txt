@@ -2,15 +2,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const path = require("path");
+
 const pdfParse = require("pdf-parse");
 const workInstructionRoutes = require("./routes/workInstructionRoutes");
 const onePointLessonRoutes = require('./routes/onePointLesson.routes');
 const documentRoutes = require("./routes/documentRoutes");
 const dosDontsRoutes = require("./routes/dosDontsRoutes");
 const checksheetRoutes = require("./routes/checksheetRoutes");
-const drawingRoutes = require("./routes/drawingRoutes");
-
-
 
 dotenv.config();
 
@@ -19,34 +18,29 @@ app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static("uploads"));
 
-// Use Auth Routes
+// API Routes
 app.use("/api/auth", require("./routes/auth"));
-
-// Use Workinstructions Routes
 app.use("/api/work-instructions", workInstructionRoutes);
-
-// Use One Point Lesson Routes
 app.use('/api/one-point-lesson', onePointLessonRoutes);
-
-// Use Document Routes
 app.use("/api/documents", documentRoutes);
-
-// Use Dos and Don'ts Routes
 app.use("/api/dos-donts", dosDontsRoutes);
-
-// Use Checksheet Routes
 app.use("/api/checksheets", checksheetRoutes);
 
-// Use Drawing Routes
-app.use("/api/drawings", drawingRoutes);
-
-
-// Connect to MongoDB
+// MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
+
+// ----------- Serve React Frontend Build ----------------
+app.use(express.static(path.join(__dirname, 'client', 'build')));
+
+// For any unknown routes, serve the React index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+// -------------------------------------------------------
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

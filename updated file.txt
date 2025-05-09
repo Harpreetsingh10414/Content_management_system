@@ -6,11 +6,7 @@ const pdfParse = require("pdf-parse");
 const workInstructionRoutes = require("./routes/workInstructionRoutes");
 const onePointLessonRoutes = require('./routes/onePointLesson.routes');
 const documentRoutes = require("./routes/documentRoutes");
-const dosDontsRoutes = require("./routes/dosDontsRoutes");
-const checksheetRoutes = require("./routes/checksheetRoutes");
-const drawingRoutes = require("./routes/drawingRoutes");
-
-
+const path = require('path');
 
 dotenv.config();
 
@@ -31,15 +27,9 @@ app.use('/api/one-point-lesson', onePointLessonRoutes);
 // Use Document Routes
 app.use("/api/documents", documentRoutes);
 
-// Use Dos and Don'ts Routes
-app.use("/api/dos-donts", dosDontsRoutes);
 
-// Use Checksheet Routes
-app.use("/api/checksheets", checksheetRoutes);
-
-// Use Drawing Routes
-app.use("/api/drawings", drawingRoutes);
-
+console.log("======= Loaded ENV Variales =======");
+console.log(process.env);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -47,6 +37,14 @@ mongoose.connect(process.env.MONGO_URI, {
   useUnifiedTopology: true
 }).then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
+
+app.use(express.static(path.join(__dirname, 'client', 'build')));
+
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
