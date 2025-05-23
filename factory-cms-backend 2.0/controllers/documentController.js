@@ -7,6 +7,8 @@ const path = require("path");
 // ➤ Upload a new document (PDF or image)
 exports.uploadDocument = async (req, res) => {
   try {
+    console.log("Received File:", req.file);
+    console.log("Received Body:", req.body);
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
     const { title, description, language, uploadedBy, machineCode } = req.body;
