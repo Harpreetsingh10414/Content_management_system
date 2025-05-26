@@ -10,6 +10,7 @@ const dosDontsRoutes = require("./routes/dosDontsRoutes");
 const checksheetRoutes = require("./routes/checksheetRoutes");
 const drawingRoutes = require("./routes/drawingRoutes");
 const workInstruction2p0Routes = require("./routes/workInstruction2p0Routes");
+const onePointLesson2p0Routes = require("./routes/onePointLesson2p0Routes");
 
 
 dotenv.config();
@@ -42,6 +43,10 @@ app.use("/api/drawings", drawingRoutes);
 
 // Use Work Instruction 2.0 Routes
 app.use("/api/workinstruction2p0", workInstruction2p0Routes);
+
+// Use One Point Lesson 2.0 Routes
+app.use("/api/onepointlesson2p0", onePointLesson2p0Routes);
+
 
 
 // Connect to MongoDB
