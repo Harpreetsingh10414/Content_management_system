@@ -14,6 +14,7 @@ const onePointLesson2p0Routes = require("./routes/onePointLesson2p0Routes");
 const documents2p0Routes = require("./routes/documents2p0Routes");
 const dosDonts2p0Routes = require("./routes/dosDonts2p0Routes");
 const drawings2p0Routes = require("./routes/drawings2p0Routes");
+const skillMatrix2p0Routes = require("./routes/skillMatrix2p0Routes");
 
 
 dotenv.config();
@@ -58,6 +59,9 @@ app.use("/api/dosdonts2p0", dosDonts2p0Routes);
 
 // Use Drawings 2.0 Routes
 app.use("/api/drawings2p0", drawings2p0Routes);
+
+// Use Skill Matrix 2.0 Routes
+app.use("/api/skillmatrix2p0", skillMatrix2p0Routes);
 
 
 
