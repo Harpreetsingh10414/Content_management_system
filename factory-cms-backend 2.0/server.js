@@ -15,7 +15,7 @@ const documents2p0Routes = require("./routes/documents2p0Routes");
 const dosDonts2p0Routes = require("./routes/dosDonts2p0Routes");
 const drawings2p0Routes = require("./routes/drawings2p0Routes");
 const skillMatrix2p0Routes = require("./routes/skillMatrix2p0Routes");
-
+const trainingRoutes = require("./routes/trainingRoutes");
 
 dotenv.config();
 
@@ -63,6 +63,8 @@ app.use("/api/drawings2p0", drawings2p0Routes);
 // Use Skill Matrix 2.0 Routes
 app.use("/api/skillmatrix2p0", skillMatrix2p0Routes);
 
+// Use Training Routes
+app.use("/api/training", trainingRoutes);
 
 
 // Connect to MongoDB
