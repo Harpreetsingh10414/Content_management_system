@@ -2,21 +2,35 @@ const Training = require("../models/Training");
 const fs = require("fs");
 const path = require("path");
 
-// Upload PPT
+// Upload PPT and/or images
 exports.uploadTraining = async (req, res) => {
   try {
-    console.log("Received File:", req.file);
-    console.log("Body:", req.body);
-
     const { trainingName, machineCode } = req.body;
 
-    if (!req.file) return res.status(400).json({ message: "PPT file is required" });
-    if (!trainingName || !machineCode) return res.status(400).json({ message: "All fields are required" });
+    if (!trainingName || !machineCode) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    let pptPath = null;
+    let imagePaths = [];
+
+    if (req.files["ppt"] && req.files["ppt"][0]) {
+      pptPath = req.files["ppt"][0].path;
+    }
+
+    if (req.files["images"]) {
+      imagePaths = req.files["images"].map(file => file.path);
+    }
+
+    if (!pptPath && imagePaths.length === 0) {
+      return res.status(400).json({ message: "At least one file is required (ppt or images)" });
+    }
 
     const newTraining = new Training({
       trainingName,
       machineCode,
-      filePath: req.file.path,
+      pptPath,
+      imagePaths
     });
 
     await newTraining.save();
@@ -27,7 +41,7 @@ exports.uploadTraining = async (req, res) => {
   }
 };
 
-// Get all trainings (optionally filter by machineCode)
+// Get trainings (optionally filtered)
 exports.getTrainings = async (req, res) => {
   try {
     const { machineCode } = req.query;
@@ -39,7 +53,7 @@ exports.getTrainings = async (req, res) => {
   }
 };
 
-// Delete by name or machineCode
+// Delete by trainingName or machineCode
 exports.deleteTraining = async (req, res) => {
   try {
     const { trainingName, machineCode } = req.body;
@@ -56,7 +70,12 @@ exports.deleteTraining = async (req, res) => {
     if (!trainings.length) return res.status(404).json({ message: "No training found" });
 
     for (const item of trainings) {
-      fs.unlinkSync(path.join(__dirname, `../${item.filePath}`));
+      if (item.pptPath) fs.unlinkSync(path.join(__dirname, `../${item.pptPath}`));
+      if (item.imagePaths) {
+        item.imagePaths.forEach(imgPath => {
+          fs.unlinkSync(path.join(__dirname, `../${imgPath}`));
+        });
+      }
       await item.deleteOne();
     }
 
