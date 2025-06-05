@@ -18,10 +18,18 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (["application/vnd.ms-powerpoint", "application/vnd.openxmlformats-officedocument.presentationml.presentation"].includes(file.mimetype)) {
+  const allowedTypes = [
+    "application/vnd.ms-powerpoint", // .ppt
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+    "image/jpeg",
+    "image/jpg",
+    "image/png"
+  ];
+
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Only PPT or PPTX files are allowed"), false);
+    cb(new Error("Only PPT, PPTX, JPG, JPEG, and PNG files are allowed"), false);
   }
 };
 
