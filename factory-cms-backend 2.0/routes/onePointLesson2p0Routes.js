@@ -25,4 +25,11 @@ router.post("/upload", upload.array("steps", 10), controller.uploadLesson);
 router.get("/", controller.getLessons);
 router.delete("/", controller.deleteLessons);
 
+// DELETE a lesson by its ID
+router.delete("/lesson/:id", controller.deleteLessonById);
+
+// DELETE all lessons for a machineCode
+router.delete("/machine/:machineCode", controller.deleteAllLessonsForMachine);
+
+
 module.exports = router;
