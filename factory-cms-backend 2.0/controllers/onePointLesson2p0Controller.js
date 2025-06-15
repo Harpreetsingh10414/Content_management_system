@@ -1,4 +1,4 @@
-const OnePointLesson = require("../models/OnePointLesson2p0");
+const OnePointLesson2p0 = require("../models/OnePointLesson2p0");
 const path = require("path");
 const fs = require("fs");
 
@@ -18,7 +18,7 @@ exports.uploadLessonSteps = async (req, res) => {
       description: descriptions[index]
     }));
 
-    const newLesson = new OnePointLesson({
+    const newLesson = new OnePointLesson2p0({
       name,
       machineCode,
       steps
@@ -36,7 +36,7 @@ exports.uploadLessonSteps = async (req, res) => {
 exports.getLessons = async (req, res) => {
   try {
     const filter = req.query.machineCode ? { machineCode: req.query.machineCode } : {};
-    const lessons = await OnePointLesson.find(filter);
+    const lessons = await OnePointLesson2p0.find(filter);
     res.status(200).json(lessons);
   } catch (error) {
     res.status(500).json({ message: "Failed to get lessons", error });
@@ -56,7 +56,7 @@ exports.deleteLessons = async (req, res) => {
     if (name) filter.name = name;
     if (machineCode) filter.machineCode = machineCode;
 
-    const lessons = await OnePointLesson.find(filter);
+    const lessons = await OnePointLesson2p0.find(filter);
     if (!lessons.length) return res.status(404).json({ message: "No lessons found" });
 
     for (const lesson of lessons) {
@@ -69,5 +69,38 @@ exports.deleteLessons = async (req, res) => {
     res.status(200).json({ message: "Lessons deleted" });
   } catch (err) {
     res.status(500).json({ message: "Deletion failed", error: err });
+  }
+};
+
+// Handles /upload route
+exports.uploadLesson = async (req, res) => {
+  try {
+    const { name, machineCode, stepNumbers, descriptions } = req.body;
+
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ message: "At least one step image is required" });
+    }
+
+    if (!name || !machineCode) {
+      return res.status(400).json({ message: "Name and machineCode are required" });
+    }
+
+    const steps = req.files.map((file, index) => ({
+      stepNumber: Array.isArray(stepNumbers) ? Number(stepNumbers[index]) : Number(stepNumbers),
+      description: Array.isArray(descriptions) ? descriptions[index] : descriptions,
+      imagePath: file.path,
+    }));
+
+    const newLesson = new OnePointLesson2p0({
+      name,
+      machineCode,
+      steps,
+    });
+
+    await newLesson.save();
+    res.status(201).json({ message: "Lesson uploaded", data: newLesson });
+  } catch (error) {
+    console.error("Error uploading lesson:", error);
+    res.status(500).json({ message: "Upload failed", error });
   }
 };

@@ -21,7 +21,7 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter });
 
 // Routes
-router.post("/upload", upload.array("steps", 10), controller.uploadLessonSteps); // images + metadata
+router.post("/upload", upload.array("steps", 10), controller.uploadLesson);
 router.get("/", controller.getLessons);
 router.delete("/", controller.deleteLessons);
 
