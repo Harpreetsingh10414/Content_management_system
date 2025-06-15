@@ -1,72 +1,73 @@
-const OnePointLesson2p0 = require("../models/OnePointLesson2p0");
+const OnePointLesson = require("../models/OnePointLesson2p0");
 const path = require("path");
 const fs = require("fs");
 
-// Upload lesson
-exports.uploadLesson = async (req, res) => {
+// Upload multiple steps
+exports.uploadLessonSteps = async (req, res) => {
   try {
-    console.log("Uploading One Point Lesson 2.0");
-    const { name, machineCode } = req.body;
+    const { name, machineCode, descriptions, stepNumbers } = req.body;
+    const files = req.files;
 
-    if (!req.file) return res.status(400).json({ message: "Image is required" });
-    if (!name || !machineCode) return res.status(400).json({ message: "Name and machineCode are required" });
+    if (!name || !machineCode || !files || files.length === 0) {
+      return res.status(400).json({ message: "All fields and files are required" });
+    }
 
-    const newLesson = new OnePointLesson2p0({
+    const steps = files.map((file, index) => ({
+      stepNumber: Number(stepNumbers[index]),
+      imagePath: file.path,
+      description: descriptions[index]
+    }));
+
+    const newLesson = new OnePointLesson({
       name,
       machineCode,
-      imagePath: req.file.path,
+      steps
     });
 
     await newLesson.save();
-    console.log("Upload successful:", newLesson);
-    res.status(201).json({ message: "Lesson uploaded", data: newLesson });
-  } catch (error) {
-    console.error("Error uploading lesson:", error);
-    res.status(500).json({ message: "Upload failed", error });
+    res.status(201).json({ message: "One Point Lesson created", data: newLesson });
+  } catch (err) {
+    console.error("Upload error:", err);
+    res.status(500).json({ message: "Failed to upload lesson", error: err });
   }
 };
 
-// Get lessons (optionally filtered)
+// Get lessons by machine (optional filter)
 exports.getLessons = async (req, res) => {
   try {
     const filter = req.query.machineCode ? { machineCode: req.query.machineCode } : {};
-    const lessons = await OnePointLesson2p0.find(filter);
+    const lessons = await OnePointLesson.find(filter);
     res.status(200).json(lessons);
   } catch (error) {
-    res.status(500).json({ message: "Error retrieving lessons", error });
+    res.status(500).json({ message: "Failed to get lessons", error });
   }
 };
 
-// Delete by ID
-exports.deleteLesson = async (req, res) => {
-  try {
-    const lesson = await OnePointLesson2p0.findById(req.params.id);
-    if (!lesson) return res.status(404).json({ message: "Lesson not found" });
-
-    fs.unlinkSync(path.join(__dirname, `../${lesson.imagePath}`));
-    await lesson.deleteOne();
-    res.status(200).json({ message: "Lesson deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting lesson", error });
-  }
-};
-
-// ✅ Delete by name and machineCode
-exports.deleteLessonByNameAndMachine = async (req, res) => {
+// Delete by name or machineCode
+exports.deleteLessons = async (req, res) => {
   try {
     const { name, machineCode } = req.body;
-    console.log("Delete request received:", name, machineCode);
 
-    const lesson = await OnePointLesson2p0.findOne({ name, machineCode });
-    if (!lesson) return res.status(404).json({ message: "Lesson not found with given name and machineCode" });
+    if (!name && !machineCode) {
+      return res.status(400).json({ message: "Provide name or machineCode" });
+    }
 
-    fs.unlinkSync(path.join(__dirname, `../${lesson.imagePath}`));
-    await lesson.deleteOne();
+    const filter = {};
+    if (name) filter.name = name;
+    if (machineCode) filter.machineCode = machineCode;
 
-    console.log("Lesson deleted:", lesson._id);
-    res.status(200).json({ message: "Lesson deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting by name and machine:", error);
-    res.status(500).json({ message: "Error deleting lesson", error });
+    const lessons = await OnePointLesson.find(filter);
+    if (!lessons.length) return res.status(404).json({ message: "No lessons found" });
+
+    for (const lesson of lessons) {
+      for (const step of lesson.steps) {
+        fs.unlinkSync(path.join(__dirname, `../${step.imagePath}`));
+      }
+      await lesson.deleteOne();
+    }
+
+    res.status(200).json({ message: "Lessons deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Deletion failed", error: err });
   }
 };
