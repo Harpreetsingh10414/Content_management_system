@@ -2,37 +2,41 @@ const Drawings2p0 = require("../models/drawings2p0");
 const fs = require("fs");
 const path = require("path");
 
-// ✅ Upload a drawing image
-exports.uploadDrawing = async (req, res) => {
+// ✅ Upload Multiple Drawing Images
+exports.uploadMultipleDrawings = async (req, res) => {
   try {
-    console.log("Received File:", req.file);
-    console.log("Received Body:", req.body);
+    console.log("Uploading multiple drawing images");
 
     const { name, machineCode } = req.body;
+    const files = req.files;
 
-    if (!req.file) {
-      return res.status(400).json({ message: "Image is required" });
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "At least one image is required" });
     }
 
     if (!name || !machineCode) {
       return res.status(400).json({ message: "Name and machineCode are required" });
     }
 
-    const newDrawing = new Drawings2p0({
-      name,
-      machineCode,
-      imagePath: req.file.path,
-    });
+    const entries = await Promise.all(
+      files.map((file) => {
+        const newEntry = new Drawings2p0({
+          name,
+          machineCode,
+          imagePath: file.path,
+        });
+        return newEntry.save();
+      })
+    );
 
-    await newDrawing.save();
-    res.status(201).json({ message: "Drawing uploaded successfully", drawing: newDrawing });
+    res.status(201).json({ message: "Drawings uploaded successfully", entries });
   } catch (error) {
     console.error("Upload Error:", error);
-    res.status(500).json({ message: "Error uploading drawing", error });
+    res.status(500).json({ message: "Error uploading drawings", error });
   }
 };
 
-// ✅ Get all drawings or filter by machineCode
+// ✅ Get All Drawings (with optional filter)
 exports.getAllDrawings = async (req, res) => {
   try {
     const { machineCode } = req.query;
@@ -44,7 +48,7 @@ exports.getAllDrawings = async (req, res) => {
   }
 };
 
-// ✅ Delete drawing(s) by name
+// ✅ Delete Drawings by Name
 exports.deleteByName = async (req, res) => {
   try {
     const { name } = req.params;
@@ -65,7 +69,7 @@ exports.deleteByName = async (req, res) => {
   }
 };
 
-// ✅ Delete all drawings by machineCode
+// ✅ Delete Drawings by Machine Code
 exports.deleteByMachineCode = async (req, res) => {
   try {
     const { machineCode } = req.params;
