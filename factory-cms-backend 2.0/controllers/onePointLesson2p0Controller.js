@@ -3,35 +3,42 @@ const fs = require("fs");
 const path = require("path");
 
 // Upload multiple steps
+// Upload multiple OPL steps
 exports.uploadSteps = async (req, res) => {
   try {
+    console.log("🟢 Received Body:", req.body);
+    console.log("🟢 Received Files:", req.files);
+
     const { lessonName, machineCode } = req.body;
-    const stepNumbers = JSON.parse(req.body.stepNumbers || "[]");
     const descriptions = JSON.parse(req.body.descriptions || "[]");
 
-    if (!lessonName || !machineCode || !req.files) {
-      return res.status(400).json({ message: "❌ lessonName, machineCode, and images are required." });
+    if (!lessonName || !machineCode || descriptions.length === 0) {
+      return res.status(400).json({ message: "❌ lessonName, machineCode, and descriptions are required." });
     }
 
-    if (stepNumbers.length !== descriptions.length || stepNumbers.length !== req.files.length) {
-      return res.status(400).json({ message: "❌ Mismatch between stepNumbers, descriptions, or image count." });
+    if (descriptions.length !== req.files.length) {
+      return res.status(400).json({ message: "❌ Descriptions count and image count must match." });
     }
 
-    const steps = stepNumbers.map((stepNumber, i) => ({
+    const steps = descriptions.map((description, i) => ({
       lessonName,
       machineCode,
-      stepNumber,
-      description: descriptions[i],
-      imagePath: req.files[i].path
+      stepNumber: i + 1,
+      description,
+      imagePath: req.files[i].path,
     }));
 
     const savedSteps = await OnePointLesson2p0.insertMany(steps);
-    res.status(201).json({ message: "✅ Steps uploaded successfully", steps: savedSteps });
+    console.log("✅ Saved OPL Steps:", savedSteps);
+
+    res.status(201).json({ message: "✅ Lesson uploaded successfully", steps: savedSteps });
   } catch (error) {
-    console.error("❌ Upload Error:", error);
-    res.status(500).json({ message: "❌ Error uploading steps", error });
+    console.error("❌ Error uploading lesson:", error);
+    res.status(500).json({ message: "❌ Error uploading lesson", error });
   }
 };
+
+
 
 // Get all steps for a machine
 exports.getStepsByMachineCode = async (req, res) => {
@@ -45,19 +52,32 @@ exports.getStepsByMachineCode = async (req, res) => {
 };
 
 // Delete a single step by ID
+// Delete a single step by ID
 exports.deleteStepById = async (req, res) => {
   try {
     const { id } = req.params;
-    const step = await OnePointLesson2p0.findById(id);
-    if (!step) return res.status(404).json({ message: "❌ Step not found" });
+    console.log("🗑️ Deleting OPL step with ID:", id);
+    console.log("🔍 ID from params:", id);
 
-    fs.unlinkSync(path.join(__dirname, `../${step.imagePath}`));
+    const step = await OnePointLesson2p0.findById(id);
+    if (!step) return res.status(404).json({ message: "Step not found" });
+
+    // Delete file from disk
+    const fullPath = path.resolve(step.imagePath);
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    }
+
     await step.deleteOne();
-    res.status(200).json({ message: "✅ Step deleted", step });
+
+    res.status(200).json({ message: "✅ Step deleted successfully", step });
   } catch (error) {
+    console.error("❌ Error deleting step:", error);
     res.status(500).json({ message: "❌ Error deleting step", error });
   }
 };
+
+
 
 // Delete all steps for a machine
 exports.deleteAllStepsForMachine = async (req, res) => {
