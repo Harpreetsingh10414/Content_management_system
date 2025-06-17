@@ -2,84 +2,91 @@ const DosDonts2p0 = require("../models/dosDonts2p0");
 const fs = require("fs");
 const path = require("path");
 
-// Upload Do's & Don'ts image
-exports.uploadDosDonts = async (req, res) => {
+// Upload multiple steps
+exports.uploadMultipleDosDonts = async (req, res) => {
   try {
-    console.log("Uploading image for Do's & Don'ts 2.0");
-
     const { name, machineCode } = req.body;
+    const stepNumbers = JSON.parse(req.body.stepNumbers || "[]");
+    const descriptions = JSON.parse(req.body.descriptions || "[]");
 
-    if (!req.file || !name || !machineCode) {
-      return res.status(400).json({ message: "Image, name, and machineCode are required." });
+    if (!name || !machineCode || stepNumbers.length === 0 || descriptions.length === 0 || !req.files.length) {
+      return res.status(400).json({ message: "All fields and files are required." });
     }
 
-    const newEntry = new DosDonts2p0({
+    if (stepNumbers.length !== descriptions.length || stepNumbers.length !== req.files.length) {
+      return res.status(400).json({ message: "Mismatch between stepNumbers, descriptions, or image count." });
+    }
+
+    const entries = stepNumbers.map((stepNumber, i) => ({
       name,
       machineCode,
-      imagePath: req.file.path,
-    });
+      stepNumber,
+      description: descriptions[i],
+      imagePath: req.files[i].path,
+    }));
 
-    await newEntry.save();
-    res.status(201).json({ message: "Do's & Don'ts uploaded successfully", entry: newEntry });
+    const saved = await DosDonts2p0.insertMany(entries);
+    res.status(201).json({ message: "✅ Uploaded successfully", data: saved });
+
   } catch (error) {
-    console.error("Upload error:", error);
-    res.status(500).json({ message: "Upload failed", error });
+    console.error("❌ Upload Error:", error);
+    res.status(500).json({ message: "❌ Error uploading Do's & Don'ts", error });
   }
 };
 
-// Get all Do's & Don'ts
-exports.getAllDosDonts = async (req, res) => {
-  try {
-    const { machineCode } = req.query;
-    const filter = machineCode ? { machineCode } : {};
-    const items = await DosDonts2p0.find(filter);
-    res.status(200).json(items);
-  } catch (error) {
-    console.error("Fetch error:", error);
-    res.status(500).json({ message: "Failed to fetch entries", error });
-  }
-};
-
-// Delete by name
-exports.deleteByName = async (req, res) => {
-  try {
-    const { name } = req.params;
-    const entries = await DosDonts2p0.find({ name });
-
-    if (!entries.length) {
-      return res.status(404).json({ message: "No entries found with that name" });
-    }
-
-    for (const entry of entries) {
-      fs.unlinkSync(path.join(__dirname, `../${entry.imagePath}`));
-      await entry.deleteOne();
-    }
-
-    res.status(200).json({ message: "Entries deleted successfully by name" });
-  } catch (error) {
-    console.error("Delete by name error:", error);
-    res.status(500).json({ message: "Failed to delete by name", error });
-  }
-};
-
-// Delete by machineCode
-exports.deleteByMachineCode = async (req, res) => {
+// Get all steps for machineCode
+exports.getStepsByMachineCode = async (req, res) => {
   try {
     const { machineCode } = req.params;
-    const entries = await DosDonts2p0.find({ machineCode });
-
-    if (!entries.length) {
-      return res.status(404).json({ message: "No entries found with that machine code" });
-    }
-
-    for (const entry of entries) {
-      fs.unlinkSync(path.join(__dirname, `../${entry.imagePath}`));
-      await entry.deleteOne();
-    }
-
-    res.status(200).json({ message: "Entries deleted successfully by machineCode" });
+    const steps = await DosDonts2p0.find({ machineCode }).sort({ stepNumber: 1 });
+    res.status(200).json(steps);
   } catch (error) {
-    console.error("Delete by machineCode error:", error);
-    res.status(500).json({ message: "Failed to delete by machineCode", error });
+    res.status(500).json({ message: "Error fetching data", error });
+  }
+};
+
+// Delete single step by ID
+exports.deleteStepById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const step = await DosDonts2p0.findById(id);
+
+    if (!step) return res.status(404).json({ message: "Step not found" });
+
+    try {
+      fs.unlinkSync(path.join(__dirname, `../${step.imagePath}`));
+    } catch (e) {
+      console.warn("Image not found to delete:", e.message);
+    }
+
+    await step.deleteOne();
+    res.status(200).json({ message: "✅ Step deleted", step });
+
+  } catch (error) {
+    res.status(500).json({ message: "❌ Error deleting step", error });
+  }
+};
+
+// Delete all steps for a machineCode
+exports.deleteAllByMachineCode = async (req, res) => {
+  try {
+    const { machineCode } = req.params;
+    const steps = await DosDonts2p0.find({ machineCode });
+
+    if (!steps.length) return res.status(404).json({ message: "No steps found for this machineCode" });
+
+    for (const step of steps) {
+      try {
+        fs.unlinkSync(path.join(__dirname, `../${step.imagePath}`));
+      } catch (e) {
+        console.warn("Image not found to delete:", e.message);
+      }
+      await step.deleteOne();
+    }
+
+    res.status(200).json({ message: `✅ Deleted ${steps.length} steps` });
+
+  } catch (error) {
+    res.status(500).json({ message: "❌ Error deleting steps", error });
   }
 };

@@ -2,8 +2,10 @@ const mongoose = require("mongoose");
 
 const dosDonts2p0Schema = new mongoose.Schema({
   name: { type: String, required: true },
-  imagePath: { type: String, required: true },
   machineCode: { type: String, required: true },
+  stepNumber: { type: Number, required: true },
+  description: { type: String, required: true },
+  imagePath: { type: String, required: true },
 }, {
   timestamps: true,
 });
