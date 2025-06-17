@@ -90,3 +90,32 @@ exports.deleteByMachineCode = async (req, res) => {
     res.status(500).json({ message: "Failed to delete skill matrix by machine code.", error });
   }
 };
+
+// ✅ Delete by ID
+exports.deleteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const record = await SkillMatrix.findById(id);
+    if (!record) {
+      return res.status(404).json({ message: "Record not found" });
+    }
+
+    const fullPath = path.join(__dirname, `../${record.imagePath}`);
+
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    } else {
+      console.warn("SkillMatrix file not found, skipping delete:", fullPath);
+    }
+
+    await record.deleteOne();
+
+    res.status(200).json({ message: "Skill matrix entry deleted successfully by ID" });
+  } catch (error) {
+    console.error("Delete by ID Error:", error);
+    res.status(500).json({ message: "Failed to delete skill matrix by ID", error });
+  }
+};
+
+

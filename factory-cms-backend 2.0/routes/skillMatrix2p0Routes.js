@@ -30,5 +30,7 @@ router.post("/upload", upload.array("images", 10), controller.uploadSkillMatrix)
 router.get("/", controller.getAllSkillMatrices);
 router.delete("/delete/name/:name", controller.deleteByName);
 router.delete("/delete/machine/:machineCode", controller.deleteByMachineCode);
+router.delete("/delete/id/:id", controller.deleteById);
+
 
 module.exports = router;

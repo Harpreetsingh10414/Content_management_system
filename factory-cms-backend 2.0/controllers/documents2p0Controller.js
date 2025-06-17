@@ -81,17 +81,27 @@ exports.deleteDocument = async (req, res) => {
 exports.deleteById = async (req, res) => {
   try {
     const { id } = req.params;
-    const doc = await Documents2p0.findById(id);
 
-    if (!doc) {
+    const record = await Documents2p0.findById(id);
+    if (!record) {
       return res.status(404).json({ message: "Document not found" });
     }
 
-    fs.unlinkSync(path.join(__dirname, `../${doc.imagePath}`));
-    await doc.deleteOne();
+    const fullPath = path.join(__dirname, `../${record.imagePath}`);
+    
+    // Check if file exists before deleting
+    if (fs.existsSync(fullPath)) {
+      fs.unlinkSync(fullPath);
+    } else {
+      console.warn("File not found, skipping delete:", fullPath);
+    }
 
-    res.status(200).json({ message: "Document deleted by ID successfully" });
+    await record.deleteOne();
+
+    res.status(200).json({ message: "Document deleted successfully by ID" });
   } catch (error) {
+    console.error("Delete by ID Error:", error);
     res.status(500).json({ message: "Failed to delete document by ID", error });
   }
 };
+
