@@ -47,5 +47,7 @@ router.post(
 
 router.get("/", trainingController.getTrainings);
 router.delete("/", trainingController.deleteTraining);
+router.delete("/delete/id/:id", trainingController.deleteById);
+
 
 module.exports = router;

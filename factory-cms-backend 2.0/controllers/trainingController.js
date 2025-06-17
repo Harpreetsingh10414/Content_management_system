@@ -84,3 +84,44 @@ exports.deleteTraining = async (req, res) => {
     res.status(500).json({ message: "Error deleting training(s)", error: err });
   }
 };
+
+
+// ✅ Safe delete by ID
+exports.deleteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const record = await Training.findById(id);
+    if (!record) {
+      return res.status(404).json({ message: "Training record not found" });
+    }
+
+    // Delete PPT file if it exists
+    if (record.pptPath) {
+      const pptFullPath = path.join(__dirname, `../${record.pptPath}`);
+      if (fs.existsSync(pptFullPath)) {
+        fs.unlinkSync(pptFullPath);
+      } else {
+        console.warn("PPT not found, skipping:", pptFullPath);
+      }
+    }
+
+    // Delete each image safely
+    if (Array.isArray(record.imagePaths)) {
+      for (const imgPath of record.imagePaths) {
+        const imgFullPath = path.join(__dirname, `../${imgPath}`);
+        if (fs.existsSync(imgFullPath)) {
+          fs.unlinkSync(imgFullPath);
+        } else {
+          console.warn("Image not found, skipping:", imgFullPath);
+        }
+      }
+    }
+
+    await record.deleteOne();
+    res.status(200).json({ message: "Training record deleted successfully by ID" });
+  } catch (err) {
+    console.error("Delete by ID Error:", err);
+    res.status(500).json({ message: "Failed to delete training by ID", error: err });
+  }
+};
