@@ -89,3 +89,24 @@ exports.deleteByMachineCode = async (req, res) => {
     res.status(500).json({ message: "Error deleting drawings by machineCode", error });
   }
 };
+
+// ✅ Delete drawing by ID
+exports.deleteById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const drawing = await Drawings2p0.findById(id);
+
+    if (!drawing) {
+      return res.status(404).json({ message: "Drawing not found" });
+    }
+
+    if (fs.existsSync(drawing.imagePath)) {
+      fs.unlinkSync(drawing.imagePath);
+    }
+
+    await drawing.deleteOne();
+    res.status(200).json({ message: "Drawing deleted successfully by ID" });
+  } catch (error) {
+    res.status(500).json({ message: "Error deleting drawing by ID", error });
+  }
+};

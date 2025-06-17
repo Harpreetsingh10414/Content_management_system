@@ -14,5 +14,6 @@ router.delete("/name/:name", controller.deleteByName);
 
 // Delete by machineCode
 router.delete("/machine/:machineCode", controller.deleteByMachineCode);
+router.delete("/id/:id", controller.deleteById); 
 
 module.exports = router;
