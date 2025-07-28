@@ -16,6 +16,7 @@ const dosDonts2p0Routes = require("./routes/dosDonts2p0Routes");
 const drawings2p0Routes = require("./routes/drawings2p0Routes");
 const skillMatrix2p0Routes = require("./routes/skillMatrix2p0Routes");
 const trainingRoutes = require("./routes/trainingRoutes");
+const dailyChecksheetRoutes = require("./routes/dailyChecksheetRoutes");
 
 dotenv.config();
 
@@ -65,6 +66,9 @@ app.use("/api/skillmatrix2p0", skillMatrix2p0Routes);
 
 // Use Training Routes
 app.use("/api/training", trainingRoutes);
+
+// Use Daily Checksheet Routes
+app.use("/api/daily-checksheet", dailyChecksheetRoutes);
 
 
 // Connect to MongoDB
