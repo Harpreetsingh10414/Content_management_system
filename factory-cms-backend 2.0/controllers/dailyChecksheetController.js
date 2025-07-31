@@ -1,5 +1,6 @@
 const DailyChecksheet = require("../models/DailyChecksheet");
 const moment = require("moment");
+const ExcelJS = require("exceljs");
 
 // Create new checksheet
 exports.createChecksheet = async (req, res) => {
@@ -111,5 +112,131 @@ exports.getSheetDetails = async (req, res) => {
   } catch (err) {
     console.error("❌ Details Error:", err);
     res.status(500).json({ message: "Failed to fetch sheet", error: err });
+  }
+};
+
+// Delete a check from the sheet by serialNo
+exports.deleteStepFromChecksheet = async (req, res) => {
+  try {
+    const { documentNumber, serialNo } = req.params;
+
+    const sheet = await DailyChecksheet.findOne({ documentNumber });
+    if (!sheet) {
+      return res.status(404).json({ message: "Checksheet not found" });
+    }
+
+    // Filter out the check with the given serialNo
+    const updatedChecks = sheet.checks.filter(check => check.serialNo != serialNo);
+
+    if (updatedChecks.length === sheet.checks.length) {
+      return res.status(404).json({ message: "Check not found in this checksheet" });
+    }
+
+    // Reassign serial numbers
+    const rearrangedChecks = updatedChecks.map((check, index) => ({
+      ...check.toObject(),
+      serialNo: index + 1
+    }));
+
+    sheet.checks = rearrangedChecks;
+    await sheet.save();
+
+    res.status(200).json({
+      message: `Check with serialNo ${serialNo} deleted and checks rearranged.`,
+      updatedChecks: sheet.checks
+    });
+  } catch (error) {
+    console.error("❌ Error deleting check:", error);
+    res.status(500).json({ message: "Failed to delete check", error });
+  }
+};
+
+// DELETE checksheet by documentNumber
+exports.deleteChecksheetByDocNumber = async (req, res) => {
+  try {
+    const { documentNumber } = req.params;
+
+    const deletedSheet = await DailyChecksheet.findOneAndDelete({ documentNumber });
+
+    if (!deletedSheet) {
+      return res.status(404).json({ message: "Checksheet not found." });
+    }
+
+    console.log(`Checksheet with Document No: ${documentNumber} deleted.`);
+    res.status(200).json({
+      message: "Checksheet deleted successfully.",
+      deletedDocument: deletedSheet,
+    });
+  } catch (error) {
+    console.error("Error deleting checksheet:", error);
+    res.status(500).json({ message: "Server error while deleting checksheet." });
+  }
+};
+
+
+// Export to Excel
+exports.exportChecksheetToExcel = async (req, res) => {
+  try {
+    const { documentNumber } = req.params;
+    const { fromDate, toDate } = req.query;
+
+    if (!fromDate || !toDate) {
+      return res.status(400).json({ message: "Both fromDate and toDate are required." });
+    }
+
+    const sheets = await DailyChecksheet.find({
+      documentNumber,
+      date: { $gte: fromDate, $lte: toDate }
+    });
+
+    if (sheets.length === 0) {
+      console.log(`[EXPORT ERROR] No data found for document: ${documentNumber} between ${fromDate} and ${toDate}`);
+      return res.status(404).json({ message: "No checksheets found for given document number and date range." });
+    }
+
+    // Excel workbook and sheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Checksheet Export");
+
+    // Header row
+    worksheet.columns = [
+      { header: "Document Number", key: "documentNumber", width: 20 },
+      { header: "Machine Code", key: "machineCode", width: 15 },
+      { header: "Date", key: "date", width: 15 },
+      { header: "Submitted By", key: "submittedBy", width: 20 },
+      { header: "Updated On", key: "updatedOn", width: 20 },
+      { header: "Step No", key: "serialNo", width: 10 },
+      { header: "Check Point", key: "checkPoint", width: 30 },
+      { header: "OK/NG", key: "okNg", width: 10 }
+    ];
+
+    // Fill rows
+    sheets.forEach(sheet => {
+      sheet.checks.forEach(check => {
+        worksheet.addRow({
+          documentNumber: sheet.documentNumber,
+          machineCode: sheet.machineCode,
+          date: sheet.date,
+          submittedBy: sheet.submittedBy || "-",
+          updatedOn: sheet.updatedOn || "-",
+          serialNo: check.serialNo,
+          checkPoint: check.checkPoint,
+          okNg: check.okNg
+        });
+      });
+    });
+
+    // Response headers
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename=${documentNumber}_${fromDate}_to_${toDate}.xlsx`);
+
+    await workbook.xlsx.write(res);
+    res.end();
+
+    console.log(`[EXPORT SUCCESS] Exported ${sheets.length} sheet(s) for ${documentNumber} to Excel`);
+
+  } catch (error) {
+    console.error("[EXPORT ERROR]", error);
+    res.status(500).json({ message: "Error while exporting to Excel", error });
   }
 };
