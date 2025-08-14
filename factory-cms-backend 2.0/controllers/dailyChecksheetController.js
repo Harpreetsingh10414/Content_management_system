@@ -91,27 +91,28 @@ exports.updateCheckStatus = async (req, res) => {
 
 // Get all sheets by machine
 exports.getAllByMachine = async (req, res) => {
+  console.log("🛠 getAllByMachine called");
+  console.log("📌 Params:", req.params);
+
   try {
     const { machineCode } = req.params;
+    console.log(`🔍 Searching for machineCode: ${machineCode}`);
 
-    // Fetch only the required fields
-    const sheets = await DailyChecksheet.find({ machineCode })
-      .select("documentNumber date")
-      .lean();
+    const sheets = await DailyChecksheet.find({ machineCode }).select("documentNumber date");
 
-    // Convert date to YYYY-MM-DD format for frontend
-    const formattedSheets = sheets.map(sheet => ({
-      documentNumber: sheet.documentNumber,
-      date: sheet.date ? new Date(sheet.date).toISOString().split("T")[0] : null
-    }));
+    console.log(`📄 Found ${sheets.length} sheet(s) for machineCode ${machineCode}`);
 
-    console.log(`✅ Found ${formattedSheets.length} sheets for machine ${machineCode}`);
-    res.status(200).json(formattedSheets);
+    if (sheets.length === 0) {
+      console.warn(`⚠ No sheets found for machineCode ${machineCode}`);
+    }
+
+    res.status(200).json(sheets);
   } catch (err) {
-    console.error("❌ Fetch Error:", err);
+    console.error("❌ Fetch Error in getAllByMachine:", err);
     res.status(500).json({ message: "Failed to fetch sheets", error: err });
   }
 };
+
 
 
 // Get details by document number and date
