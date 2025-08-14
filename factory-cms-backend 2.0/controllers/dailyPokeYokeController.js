@@ -6,15 +6,25 @@ const XLSX = require("xlsx");
 // ✅ Create a new check sheet
 exports.createChecksheet = async (req, res) => {
   try {
-    console.log("📄 Creating new Poke Yoke Checksheet");
+    console.log("📄 Creating new Poke Yoke Checksheet with images");
+
     const { documentName, machineCode, checkedBy, verifiedBy, checkItems } = req.body;
+    let parsedCheckItems = JSON.parse(checkItems);
+
+    if (req.files && req.files.length > 0) {
+      req.files.forEach((file, index) => {
+        if (parsedCheckItems[index]) {
+          parsedCheckItems[index].photo = `uploads/pokeyoke/${file.filename}`;
+        }
+      });
+    }
 
     const sheet = new DailyPokeYokeChecksheet({
       documentName,
       machineCode,
       checkedBy,
       verifiedBy,
-      checkItems,
+      checkItems: parsedCheckItems,
     });
 
     await sheet.save();
@@ -24,6 +34,7 @@ exports.createChecksheet = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 // ✅ Get check sheet by machine code
 exports.getChecksheetByMachine = async (req, res) => {
