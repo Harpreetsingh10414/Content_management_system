@@ -5,7 +5,7 @@ const checkItemSchema = new mongoose.Schema({
   pokeYokeCheck: { type: String, required: true },
   typeOfPokeYoke: { type: String, required: true },
   verificationMethod: { type: String, required: true },
-  photo: { type: String }, // image file path
+  photo: { type: String }, // store URL/path (no change to flow)
 });
 
 const submissionSchema = new mongoose.Schema({
@@ -26,7 +26,7 @@ const dailyPokeYokeSchema = new mongoose.Schema({
   checkedBy: { type: String, required: true },
   verifiedBy: { type: String, required: true },
   checkItems: [checkItemSchema],
-  submissions: [submissionSchema], // per day submissions
+  submissions: [submissionSchema],
 });
 
 module.exports = mongoose.model("DailyPokeYokeChecksheet", dailyPokeYokeSchema);

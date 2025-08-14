@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const pdfParse = require("pdf-parse");
+const path = require("path");
 const workInstructionRoutes = require("./routes/workInstructionRoutes");
 const onePointLessonRoutes = require('./routes/onePointLesson.routes');
 const documentRoutes = require("./routes/documentRoutes");
@@ -34,6 +35,9 @@ app.use((req, res, next) => {
 console.log("In Server")
 app.use(cors());
 app.use("/uploads", express.static("uploads"));
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Use Auth Routes
 app.use("/api/auth", require("./routes/auth"));
