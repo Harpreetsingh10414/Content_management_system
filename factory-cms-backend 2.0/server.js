@@ -19,6 +19,7 @@ const skillMatrix2p0Routes = require("./routes/skillMatrix2p0Routes");
 const trainingRoutes = require("./routes/trainingRoutes");
 const dailyChecksheetRoutes = require("./routes/dailyChecksheetRoutes");
 const dailyPokeYokeRoutes = require("./routes/dailyPokeYokeRoutes");
+const dailyMachine2p0Routes = require("./routes/dailyMachine2p0Routes");
 
 dotenv.config();
 
@@ -86,6 +87,9 @@ app.use("/api/daily-checksheet", dailyChecksheetRoutes);
 
 // Use Daily Poke Yoke Routes
 app.use("/api/pokeyoke", dailyPokeYokeRoutes);
+
+// Use Daily Machine 2.0 Routes
+app.use("/api/dailymachine2p0", dailyMachine2p0Routes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
