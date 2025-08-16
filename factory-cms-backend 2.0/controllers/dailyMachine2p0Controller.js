@@ -2,58 +2,166 @@ const DailyMachine2p0 = require("../models/DailyMachine2p0");
 const moment = require("moment");
 const ExcelJS = require("exceljs");
 
-// 🔹 Create new checksheet
+/* ----------------------- helpers ----------------------- */
+function parseChecks(maybeChecks) {
+  // Accept Array OR JSON string (common with FormData)
+  if (!maybeChecks) return [];
+  if (Array.isArray(maybeChecks)) return maybeChecks;
+  if (typeof maybeChecks === "string") {
+    try {
+      const parsed = JSON.parse(maybeChecks);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      console.error("❌ checks JSON.parse failed:", e.message);
+      return [];
+    }
+  }
+  return [];
+}
+
+function normalizeChecks(rawChecks, startAt = 1) {
+  // Clean, coerce and re-index sno; drop empty descriptions
+  const cleaned = rawChecks
+    .map((c, idx) => {
+      const snoNum = Number(c?.sno);
+      return {
+        sno: Number.isFinite(snoNum) && snoNum > 0 ? snoNum : startAt + idx,
+        description: (c?.description || c?.desc || "").toString().trim(),
+        specification: (c?.specification || c?.spec || "").toString().trim(),
+        method: (c?.method || "").toString().trim(),
+        frequency: (c?.frequency || "").toString().trim(),
+        checkingPoint: (c?.checkingPoint || c?.image || "").toString().trim(),
+      };
+    })
+    .filter(c => c.description); // require description minimally
+
+  // sort by sno, then reassign sequentially to remove gaps/dupes
+  cleaned.sort((a, b) => a.sno - b.sno);
+  return cleaned.map((c, i) => ({ ...c, sno: startAt + i }));
+}
+
+function errorReply(res, err, fallback = "Operation failed") {
+  console.error("❌ Error:", err);
+  if (err?.code === 11000) {
+    return res.status(409).json({ message: "Duplicate key error", keyValue: err.keyValue });
+  }
+  if (err?.name === "ValidationError") {
+    return res.status(400).json({
+      message: "Validation failed",
+      details: Object.values(err.errors).map(e => e.message),
+    });
+  }
+  return res.status(500).json({ message: fallback, error: err });
+}
+
+/* ----------------------- controllers ----------------------- */
+
+// Create new checksheet
 exports.createChecksheet = async (req, res) => {
   try {
-    const { documentNumber, machineCode, confirmBy, checks } = req.body;
+    const { documentNumber, machineCode, confirmBy } = req.body;
+    const rawChecks = parseChecks(req.body.checks);
+    const checks = normalizeChecks(rawChecks, 1);
+
+    console.log("📥 createChecksheet body:", {
+      documentNumber,
+      machineCode,
+      confirmBy,
+      checksCount: checks.length
+    });
+
+    if (!documentNumber || !machineCode) {
+      return res.status(400).json({ message: "documentNumber and machineCode are required" });
+    }
 
     const existing = await DailyMachine2p0.findOne({ documentNumber });
-    if (existing) return res.status(409).json({ message: "Document number already exists" });
+    if (existing) {
+      return res.status(409).json({ message: "Document number already exists" });
+    }
 
-    const sheet = new DailyMachine2p0({ documentNumber, machineCode, confirmBy, checks });
-
+    const sheet = new DailyMachine2p0({ documentNumber, machineCode, confirmBy, checks, submissions: [] });
     await sheet.save();
-    console.log("✅ Created new DailyMachine2p0 sheet:", sheet);
+
+    console.log("✅ Created DailyMachine2p0:", sheet._id);
     res.status(201).json({ message: "Checksheet created successfully", sheet });
   } catch (err) {
-    console.error("❌ Create Error:", err);
-    res.status(500).json({ message: "Failed to create checksheet", error: err });
+    errorReply(res, err, "Failed to create checksheet");
   }
 };
 
-// 🔹 Edit entire checksheet (Admin)
+// Edit entire checksheet (Admin) — replaces checks if provided
 exports.editChecksheet = async (req, res) => {
   try {
     const { documentNumber } = req.params;
-    const updates = req.body; // { checks, confirmBy, machineCode }
+    const updates = { ...req.body };
 
     const sheet = await DailyMachine2p0.findOne({ documentNumber });
     if (!sheet) return res.status(404).json({ message: "Checksheet not found" });
 
-    Object.assign(sheet, updates);
-    await sheet.save();
+    // If checks provided (array or string), normalize them
+    if (typeof updates.checks !== "undefined") {
+      const rawChecks = parseChecks(updates.checks);
+      updates.checks = normalizeChecks(rawChecks, 1);
+      console.log(`✏️ Replacing checks for ${documentNumber}, count=${updates.checks.length}`);
+    }
 
-    console.log(`✏️ Checksheet ${documentNumber} updated by Admin`);
+    // apply other fields
+    if (typeof updates.machineCode !== "undefined") sheet.machineCode = updates.machineCode;
+    if (typeof updates.confirmBy !== "undefined") sheet.confirmBy = updates.confirmBy;
+    if (typeof updates.checks !== "undefined") sheet.checks = updates.checks;
+
+    await sheet.save();
+    console.log(`✏️ Checksheet ${documentNumber} updated`);
     res.status(200).json({ message: "Checksheet updated successfully", sheet });
   } catch (err) {
-    console.error("❌ Edit Checksheet Error:", err);
-    res.status(500).json({ message: "Failed to edit checksheet", error: err });
+    errorReply(res, err, "Failed to edit checksheet");
   }
 };
 
-// 🔹 Get all checksheets by machine
+// ✅ Bulk add steps to an existing checksheet (append safely)
+exports.addSteps = async (req, res) => {
+  try {
+    const { documentNumber } = req.params;
+    const rawChecks = parseChecks(req.body.checks);
+
+    if (!rawChecks.length) {
+      return res.status(400).json({ message: "checks array is required and cannot be empty" });
+    }
+
+    const sheet = await DailyMachine2p0.findOne({ documentNumber });
+    if (!sheet) return res.status(404).json({ message: "Checksheet not found" });
+
+    const nextSno = (sheet.checks[sheet.checks.length - 1]?.sno || 0) + 1;
+    const newSteps = normalizeChecks(rawChecks, nextSno);
+
+    console.log(`➕ addSteps ${documentNumber}: add ${newSteps.length} steps starting at #${nextSno}`);
+
+    sheet.checks = [...sheet.checks, ...newSteps];
+    // re-normalize entire list to guarantee sequential 1..N
+    sheet.checks = normalizeChecks(sheet.checks, 1);
+
+    await sheet.save();
+
+    res.status(200).json({ message: "Steps added successfully", totalSteps: sheet.checks.length, checks: sheet.checks });
+  } catch (err) {
+    errorReply(res, err, "Failed to add steps");
+  }
+};
+
+// Get all checksheets by machine (lightweight list)
 exports.getAllByMachine = async (req, res) => {
   try {
     const { machineCode } = req.params;
-    const sheets = await DailyMachine2p0.find({ machineCode }).select("documentNumber confirmBy createdAt");
+    const sheets = await DailyMachine2p0
+      .find({ machineCode })
+      .select("documentNumber confirmBy createdAt");
     res.status(200).json(sheets);
   } catch (err) {
-    console.error("❌ Fetch Error:", err);
-    res.status(500).json({ message: "Failed to fetch sheets", error: err });
+    errorReply(res, err, "Failed to fetch sheets");
   }
 };
 
-// 🔹 Get full details by machine
+// Get full details by machine
 exports.getDetailsByMachine = async (req, res) => {
   try {
     const { machineCode } = req.params;
@@ -61,15 +169,23 @@ exports.getDetailsByMachine = async (req, res) => {
     if (!sheet) return res.status(404).json({ message: "No checksheet found" });
     res.status(200).json(sheet);
   } catch (err) {
-    console.error("❌ Details Error:", err);
-    res.status(500).json({ message: "Failed to fetch details", error: err });
+    errorReply(res, err, "Failed to fetch details");
   }
 };
 
-// 🔹 Submit daily check (Operator)
+// Submit daily check (Operator)
 exports.submitDailyCheck = async (req, res) => {
   try {
-    const { machineCode, date, submittedBy, results } = req.body;
+    const { machineCode, date, submittedBy } = req.body;
+    let results = parseChecks(req.body.results);
+
+    // normalize results: ensure OK/NG values
+    results = results
+      .map((r, i) => ({
+        sno: Number(r?.sno) || i + 1,
+        status: (r?.status || "NG").toString().toUpperCase() === "OK" ? "OK" : "NG",
+      }))
+      .sort((a, b) => a.sno - b.sno);
 
     const sheet = await DailyMachine2p0.findOne({ machineCode });
     if (!sheet) return res.status(404).json({ message: "Checksheet not found" });
@@ -80,19 +196,24 @@ exports.submitDailyCheck = async (req, res) => {
     sheet.submissions.push({ date, submittedBy, results });
     await sheet.save();
 
-    console.log(`📥 Submission added for ${machineCode} on ${date}`);
+    console.log(`📥 Submission added for ${machineCode} on ${date} with ${results.length} results`);
     res.status(200).json({ message: "Submission successful" });
   } catch (err) {
-    console.error("❌ Submit Error:", err);
-    res.status(500).json({ message: "Failed to submit checksheet", error: err });
+    errorReply(res, err, "Failed to submit checksheet");
   }
 };
 
-// 🔹 Edit a daily submission (Admin)
+// Edit a daily submission (Admin)
 exports.editSubmission = async (req, res) => {
   try {
     const { machineCode, date } = req.params;
-    const { results } = req.body;
+    let results = parseChecks(req.body.results);
+    results = results
+      .map((r, i) => ({
+        sno: Number(r?.sno) || i + 1,
+        status: (r?.status || "NG").toString().toUpperCase() === "OK" ? "OK" : "NG",
+      }))
+      .sort((a, b) => a.sno - b.sno);
 
     const sheet = await DailyMachine2p0.findOne({ machineCode });
     if (!sheet) return res.status(404).json({ message: "Checksheet not found" });
@@ -107,12 +228,11 @@ exports.editSubmission = async (req, res) => {
     console.log(`✏️ Submission updated for ${machineCode} on ${date}`);
     res.status(200).json({ message: "Submission updated successfully" });
   } catch (err) {
-    console.error("❌ Edit Submission Error:", err);
-    res.status(500).json({ message: "Failed to update submission", error: err });
+    errorReply(res, err, "Failed to update submission");
   }
 };
 
-// 🔹 Delete entire checksheet
+// Delete entire checksheet
 exports.deleteByMachine = async (req, res) => {
   try {
     const { machineCode } = req.params;
@@ -122,12 +242,11 @@ exports.deleteByMachine = async (req, res) => {
     console.log(`🗑 Deleted checksheet for ${machineCode}`);
     res.status(200).json({ message: "Checksheet deleted successfully" });
   } catch (err) {
-    console.error("❌ Delete Error:", err);
-    res.status(500).json({ message: "Failed to delete checksheet", error: err });
+    errorReply(res, err, "Failed to delete checksheet");
   }
 };
 
-// 🔹 Export submissions to Excel
+// Export submissions to Excel
 exports.exportSubmissions = async (req, res) => {
   try {
     const { machineCode } = req.params;
@@ -176,7 +295,6 @@ exports.exportSubmissions = async (req, res) => {
 
     console.log(`📤 Exported ${filteredSubs.length} submissions for ${machineCode}`);
   } catch (err) {
-    console.error("❌ Export Error:", err);
-    res.status(500).json({ message: "Failed to export submissions", error: err });
+    errorReply(res, err, "Failed to export submissions");
   }
 };

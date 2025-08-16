@@ -1,24 +1,18 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("../controllers/dailyMachine2p0Controller");
+const ctrl = require("../controllers/dailyMachine2p0Controller");
 
-// Debug middleware
-router.use((req, res, next) => {
-  console.log("📥 [DailyMachine2p0 Route]");
-  console.log("➡ Method:", req.method, "| URL:", req.originalUrl);
-  next();
-});
+// existing routes...
+router.post("/create", ctrl.createChecksheet);
+router.put("/edit/:documentNumber", ctrl.editChecksheet);
+router.get("/machine/:machineCode", ctrl.getAllByMachine);
+router.get("/details/:machineCode", ctrl.getDetailsByMachine);
+router.post("/submit", ctrl.submitDailyCheck);
+router.put("/edit-submission/:machineCode/:date", ctrl.editSubmission);
+router.delete("/delete/:machineCode", ctrl.deleteByMachine);
+router.get("/export/:machineCode", ctrl.exportSubmissions);
 
-// Admin
-router.post("/create", controller.createChecksheet);
-router.put("/edit/:documentNumber", controller.editChecksheet);
-router.get("/machine/:machineCode", controller.getAllByMachine);
-router.get("/details/:machineCode", controller.getDetailsByMachine);
-router.put("/edit-submission/:machineCode/:date", controller.editSubmission);
-router.delete("/delete/:machineCode", controller.deleteByMachine);
-router.get("/export/:machineCode", controller.exportSubmissions);
-
-// Operator
-router.post("/submit", controller.submitDailyCheck);
+// ✅ new: append multiple steps safely
+router.post("/add-steps/:documentNumber", ctrl.addSteps);
 
 module.exports = router;
