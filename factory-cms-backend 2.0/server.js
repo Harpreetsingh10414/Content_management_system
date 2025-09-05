@@ -24,6 +24,7 @@ const andonRoutes = require("./routes/andonRoutes");
 const { startEscalationScheduler } = require("./controllers/andonController");
 const andonController = require("./controllers/andonController"); 
 const { createAndon } = require("./controllers/andonController");
+const fpaRoutes = require("./routes/fpaRoutes");
 
 dotenv.config();
 
@@ -65,6 +66,7 @@ app.use("/api/daily-checksheet", dailyChecksheetRoutes);
 app.use("/api/pokeyoke", dailyPokeYokeRoutes);
 app.use("/api/dailymachine2p0", dailyMachine2p0Routes);
 app.use("/api/andon", andonRoutes);
+app.use("/api/fpa", fpaRoutes);
 
 // MongoDB connection
 mongoose
