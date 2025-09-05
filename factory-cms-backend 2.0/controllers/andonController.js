@@ -11,29 +11,49 @@ const cron = require("node-cron");
 // ⛳️ UPDATE THESE TO YOUR TEAM EMAILS
 const CATEGORY_EMAILS = {
   Quality: {
-    lvl1: ["harpreetsingh10414@gmail.com"],
-    lvl2: ["harpreetsingh10414@gmail.com"],
-    lvl3: ["harpreetsingh10414@gmail.com"],
+    lvl1: [
+      "ravikant.yadav@skh-sila.com",
+      "yogesh@skh-sila.com"
+    ],
+    lvl2: ["Ashish.pal@skh-sila.com",
+      "priti.saran@skh-sila.com"],
+    lvl3: ["bhupendra.kumar@skh-sila.com"],
   },
   Maintenance: {
-    lvl1: ["maintenance-immediate@company.com"],
-    lvl2: ["maintenance-level2@company.com"],
-    lvl3: ["maintenance-final@company.com"],
+    lvl1: ["mahanth.ram@skh-sila.com",
+      "brijesh.yadav1@skh-sila.com"
+    ],
+    lvl2: ["Ashish.pal@skh-sila.com",
+      "priti.saran@skh-sila.com"
+    ],
+    lvl3: ["bhupendra.kumar@skh-sila.com"],
   },
   Store: {
-    lvl1: ["store-immediate@company.com"],
-    lvl2: ["store-level2@company.com"],
-    lvl3: ["store-final@company.com"],
+    lvl1: ["store.sila@skh-sila.com",
+      "rakesh.bhat@skh-sila.com"
+    ],
+    lvl2: ["priti.saran@skh-sila.com",
+      "bhooshan.chaturvedi@skh-sila.com"
+    ],
+    lvl3: ["bhupendra.kumar@skh-sila.com"],
   },
   Process: {
-    lvl1: ["process-immediate@company.com"],
-    lvl2: ["process-level2@company.com"],
-    lvl3: ["process-final@company.com"],
+    lvl1: ["ravikant.yadav@skh-sila.com",
+      "yogesh@skh-sila.com",
+      "brijesh.yadav1@skh-sila.com"
+    ],
+    lvl2: ["Ashish.pal@skh-sila.com",
+      "priti.saran@skh-sila.com"
+    ],
+    lvl3: ["bhupendra.kumar@skh-sila.com"],
   },
   Safety: {
-    lvl1: ["safety-immediate@company.com"],
-    lvl2: ["safety-level2@company.com"],
-    lvl3: ["safety-final@company.com"],
+    lvl1: ["dimpal.kumar@skh-sila.com"],
+    lvl2: ["ellora.das@skh-sila.com"],
+    lvl3: ["Ashish.pal@skh-sila.com",
+      "priti.saran@skh-sila.com",
+      "bhupendra.kumar@skh-sila.com"
+    ],
   },
 };
 
