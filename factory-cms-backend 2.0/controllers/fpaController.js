@@ -97,13 +97,13 @@ exports.getSheet = async (req, res) => {
 /* ---------------- Submit Sheet ---------------- */
 exports.submitSheet = async (req, res) => {
   try {
-    const { machineCode, submittedBy, values } = req.body;
+    const { submittedBy, values } = req.body;
+    const { machineCode } = req.params;   // ✅ take from params
+
     const sheet = await FPASheet.findOne({ machineCode });
     if (!sheet) return res.status(404).json({ message: "Sheet not found" });
 
     let hasNG = false;
-
-    // validate all four positions
     const validatedValues = values.map(v => {
       ["FPA01", "FPA02", "Mid01", "LPA01"].forEach(point => {
         if (v[point] && v[point].status === "NG") hasNG = true;
@@ -131,6 +131,7 @@ exports.submitSheet = async (req, res) => {
     res.status(500).json({ message: "Failed to submit sheet" });
   }
 };
+
 
 /* ---------------- Report API ---------------- */
 exports.exportReport = async (req, res) => {
