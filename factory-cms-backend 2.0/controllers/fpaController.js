@@ -4,16 +4,17 @@ const nodemailer = require("nodemailer");
 
 /* ---------------- Mail Setup ---------------- */
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || "smtp.zoho.in",
+  host: process.env.SMTP_HOST || "smtp.zoho.in", // smtp.zoho.com if global account
   port: Number(process.env.SMTP_PORT || 465),
-  secure: true,
+  secure: true, // true for 465, false for 587
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    user: process.env.SMTP_USER || "samcontrol97@zohomail.in", // fallback Zoho email
+    pass: process.env.SMTP_PASS || "Samcontrol@97@",           // fallback Zoho password
+  },
 });
-const FROM_EMAIL = process.env.FROM_EMAIL || process.env.SMTP_USER;
-const PLANT_HEADS = ["planthead1@company.com", "planthead2@company.com"];
+
+const FROM_EMAIL = process.env.FROM_EMAIL || "samcontrol97@zohomail.in";
+const PLANT_HEADS = ["yashnoutiyal12@gmail.com", "harpreetsingh10414@gmail.com"];
 
 /* ---------------- Create/Extend Sheet ---------------- */
 exports.createOrExtendSheet = async (req, res) => {
