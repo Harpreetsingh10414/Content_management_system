@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "exceljs": "^4.4.0"
+    "exceljs": "^4.4.0",
+    "mcprotocol": "^0.1.2",
+    "node-adodb": "^5.0.3",
+    "odbc": "^2.4.9"
   }
 }

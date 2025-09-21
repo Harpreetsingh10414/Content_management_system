@@ -22,9 +22,11 @@ const dailyPokeYokeRoutes = require("./routes/dailyPokeYokeRoutes");
 const dailyMachine2p0Routes = require("./routes/dailyMachine2p0Routes");
 const andonRoutes = require("./routes/andonRoutes");
 const { startEscalationScheduler } = require("./controllers/andonController");
-const andonController = require("./controllers/andonController"); 
-const { createAndon } = require("./controllers/andonController");
 const fpaRoutes = require("./routes/fpaRoutes");
+const dataLogsRoutes = require("./routes/dataLogsRoutes");
+
+// Import PLC routes
+//const plcRoutes = require("./middleware/plcServer");
 
 dotenv.config();
 
@@ -67,6 +69,8 @@ app.use("/api/pokeyoke", dailyPokeYokeRoutes);
 app.use("/api/dailymachine2p0", dailyMachine2p0Routes);
 app.use("/api/andon", andonRoutes);
 app.use("/api/fpa", fpaRoutes);
+//app.use("/api/plc", plcRoutes);
+app.use("/api/datalogs", dataLogsRoutes);
 
 // MongoDB connection
 mongoose
