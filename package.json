@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "body-parser": "^2.2.0",
     "exceljs": "^4.4.0",
     "mcprotocol": "^0.1.2",
     "node-adodb": "^5.0.3",
