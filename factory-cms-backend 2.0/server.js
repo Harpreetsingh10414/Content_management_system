@@ -26,6 +26,7 @@ const { startEscalationScheduler } = require("./controllers/andonController");
 const fpaRoutes = require("./routes/fpaRoutes");
 const dataLogsRoutes = require("./routes/dataLogsRoutes");
 const qualityDashboardRoutes = require("./routes/qualityDashboardRoutes");
+const fourMRoutes = require("./routes/fourMRoutes");
 
 // Import PLC routes
 //const plcRoutes = require("./middleware/plcServer");
@@ -75,6 +76,7 @@ app.use("/api/fpa", fpaRoutes);
 //app.use("/api/plc", plcRoutes);
 app.use("/api/datalogs", dataLogsRoutes);
 app.use("/api/quality-dashboard", qualityDashboardRoutes);
+app.use("/api", fourMRoutes);
 
 // MongoDB connection
 mongoose
